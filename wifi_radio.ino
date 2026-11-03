@@ -18,6 +18,9 @@ const char* radioUrl = "http://stream.syntheticfm.com:8040/live";
 
 void setup() {
     Serial.begin(115200);
+    delay(1000);
+    Serial.print("Free PSRAM: "); Serial.println(ESP.getFreePsram());
+    Serial.print("CPU Freq: "); Serial.println(getCpuFrequencyMhz());
     Serial.println("Starting WiFi Radio...");
 
     WiFi.mode(WIFI_STA);
