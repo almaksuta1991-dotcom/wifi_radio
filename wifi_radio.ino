@@ -14,7 +14,7 @@ const char* ssid = "DIR-615";
 const char* password = "751248281";
 
 // SomaFM Groove Salad
-const char* radioUrl = "http://ice1.somafm.com/groovesalad-128-mp3";
+const char* radioUrl = "http://stream.syntheticfm.com:8040/live";
 
 void setup() {
     Serial.begin(115200);
@@ -43,7 +43,6 @@ void setup() {
     }
 
     ArduinoOTA.begin();
-    audio.setBufsize(8192, 2 * 1024 * 1024);
     audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
     audio.setVolume(12); // 0...21
     audio.connecttohost(radioUrl);
