@@ -1,5 +1,6 @@
 #include "WiFi.h"
 #include "Audio.h"
+#include <ArduinoOTA.h>
 
 // ESP32-S3 pins for PCM5102
 #define I2S_BCLK 4
@@ -38,12 +39,14 @@ void setup() {
         Serial.println("WiFi connection failed. Check credentials.");
     }
 
+    ArduinoOTA.begin();
     audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
     audio.setVolume(12); // 0...21
     audio.connecttohost(radioUrl);
 }
 
 void loop() {
+    ArduinoOTA.handle();
     audio.loop();
 }
 
