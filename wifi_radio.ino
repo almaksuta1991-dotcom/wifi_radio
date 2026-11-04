@@ -14,12 +14,10 @@ const char* ssid = "DIR-615";
 const char* password = "751248281";
 
 // SomaFM Groove Salad
-const char* radioUrl = "http://stream.syntheticfm.com:8040/live";
+const char* radioUrl = "http://ice1.somafm.com/groovesalad-128-mp3";
 
 void setup() {
     Serial.begin(115200);
-    disableCore0WDT();
-    disableCore1WDT();
     WiFi.setSleep(false);
     delay(1000);
     Serial.print("Free PSRAM: "); Serial.println(ESP.getFreePsram());
