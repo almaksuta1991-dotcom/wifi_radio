@@ -14,7 +14,7 @@ const char* ssid = "DIR-615";
 const char* password = "751248281";
 
 // SomaFM Groove Salad
-const char* radioUrl = "http://ice1.somafm.com/groovesalad-128-mp3";
+const char* radioUrl = "http://ice2.somafm.com/groovesalad-128-mp3";
 
 void setup() {
     Serial.begin(115200);
