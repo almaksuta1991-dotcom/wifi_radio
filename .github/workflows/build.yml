@@ -27,7 +27,7 @@ jobs:
       - name: Install Audio Library via Git
         run: |
           mkdir -p ~/Arduino/libraries
-          git clone -b v3.0.0 https://github.com/schreibfaul1/ESP32-audioI2S.git ~/Arduino/libraries/ESP32-audioI2S
+          git clone -b 3.0.0 https://github.com/schreibfaul1/ESP32-audioI2S.git ~/Arduino/libraries/ESP32-audioI2S
 
       - name: Compile Sketch
         run: |
