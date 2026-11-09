@@ -1,0 +1,43 @@
+name: Build ESP32 Radio
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Arduino CLI
+        uses: arduino/setup-arduino-cli@v1
+
+      - name: Install ESP32 core
+        run: |
+          arduino-cli config init
+          arduino-cli config add board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32
+
+      - name: Clone Libraries
+        run: |
+          mkdir -p ~/Arduino/libraries
+          cd ~/Arduino/libraries
+          git clone https://github.com/johnrickman/LiquidCrystal_I2C.git
+          # Здесь мы потом добавим другие библиотеки, если компилятор их попросит
+
+      - name: Prepare and Compile
+        run: |
+          # Arduino CLI требует, чтобы папка называлась так же, как .ino файл
+          mkdir -p build_temp/ESP32_radio_evo3.22.01
+          cp src/ESP32_radio_evo3.22/Arduino/src/ESP32_radio_evo3.22.01.ino build_temp/ESP32_radio_evo3.22.01/
+          cp src/ESP32_radio_evo3.22/Arduino/src/partitions.csv build_temp/ESP32_radio_evo3.22.01/ || true
+          
+          # Запускаем компиляцию для ESP32-S3
+          arduino-cli compile --fqbn esp32:esp32:esp32s3 --output-dir ./output build_temp/ESP32_radio_evo3.22.01
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Firmware
+          path: output/*.bin

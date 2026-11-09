@@ -27,7 +27,41 @@
 #include <Audio.h>             // Biblioteka do obsługi funkcji związanych z dźwiękiem i audio
 #include "SPI.h"               // Biblioteka do obsługi komunikacji SPI
 #include "FS.h"                // Biblioteka do obsługi systemu plików
-#include <U8g2lib.h>           // Biblioteka do obsługi wyświetlaczy
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+// --- MOCK U8G2 CLASS FOR LCD 2004 ---
+class MockU8g2 {
+public:
+    void begin() {}
+    void clearBuffer() { lcd.clear(); }
+    void sendBuffer() {}
+    void setFont(const uint8_t* font) {}
+    void setDrawColor(int c) {}
+    void drawBox(int x, int y, int w, int h) {}
+    void drawFrame(int x, int y, int w, int h) {}
+    void drawLine(int x1, int y1, int x2, int y2) {}
+    void setCursor(int x, int y) {}
+    void setPowerSave(int p) { if(p) lcd.noBacklight(); else lcd.backlight(); }
+    
+    // Главный метод вывода текста
+    void drawStr(int x, int y, const char* str) {
+        // Перевод графических координат (256x64) в текстовые (20x4)
+        int row = y / 16; 
+        if (row > 3) row = 3;
+        int col = x / 13; 
+        if (col > 19) col = 19;
+        
+        lcd.setCursor(col, row);
+        lcd.print(str);
+        // Очистка остатка строки
+        for(int i=0; i<5; i++) lcd.print(" "); 
+    }
+    void drawUTF8(int x, int y, const char* str) { drawStr(x, y, str); }
+};
+MockU8g2 u8g2;
+// ------------------------------------
+           // Biblioteka do obsługi wyświetlaczy
 #include <ezButton.h>          // Biblioteka do obsługi enkodera z przyciskiem
 #include <HTTPClient.h>        // Biblioteka do wykonywania żądań HTTP, umożliwia komunikację z serwerami przez protokół HTTP
 #include <Ticker.h>            // Mechanizm tickera do odświeżania timera 1s, pomocny do cyklicznych akcji w pętli głównej
@@ -581,7 +615,7 @@ File myFile;  // Uchwyt pliku
 
 //U8G2_SSD1322_NHD_256X64_F_4W_HW_SPI u8g2(U8G2_R2, /* cs=*/CS_OLED, /* dc=*/DC_OLED, /* reset=*/RESET_OLED);  // Hardware SPI 3.12inch OLED
 //U8G2_SSD1309_128X64_NONAME0_F_4W_HW_SPI u8g2(U8G2_R2, /* cs=*/CS_OLED, /* dc=*/DC_OLED, /* reset=*/RESET_OLED);  
-//U8G2_SH1122_256X64_F_4W_HW_SPI u8g2(U8G2_R2, /* cs=*/ CS_OLED, /* dc=*/ DC_OLED, /* reset=*/ RESET_OLED);		// Hardware SPI  2.08inch OLED
+//LiquidCrystal_I2C lcd(0x27, 20, 4); // I2C addr 0x27, 20 chars, 4 lines		// Hardware SPI  2.08inch OLED
 //U8G2_SSD1363_256X128_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/CS_OLED, /* dc=*/DC_OLED, /* reset=*/RESET_OLED);  // Hardware SPI 3.12inch OLED
 
 #if defined(SSD1322)
@@ -589,7 +623,7 @@ File myFile;  // Uchwyt pliku
 #elif defined(SSD1309)
   U8G2_SSD1309_128X64_NONAME0_F_4W_HW_SPI u8g2(U8G2_R2, CS_OLED, DC_OLED, RESET_OLED);
 #elif defined(SH1122)
-  U8G2_SH1122_256X64_F_4W_HW_SPI u8g2(U8G2_R2, CS_OLED, DC_OLED, RESET_OLED);
+  LiquidCrystal_I2C lcd(0x27, 20, 4); // I2C addr 0x27, 20 chars, 4 lines
 #elif defined(SSD1363) 
   U8G2_SSD1363_256X128_F_4W_HW_SPI u8g2(U8G2_R0, CS_OLED, DC_OLED, RESET_OLED);
 #elif defined(SSD1306)   
@@ -10399,8 +10433,11 @@ void backToMainScreen()
 #endif
 
 //####################################################################################### SETUP ####################################################################################### //
-void setup() 
-{
+void setup() {
+  Wire.begin(8, 9); // SDA=8, SCL=9
+  lcd.init();
+  lcd.backlight();
+
   // --------LED STANDBY dla stanu HIGH w trybie Power ON ----------------
   pinMode(STANDBY_LED, OUTPUT);
   timer4.attach(0.5, updateStandbyLED);  // Ustaw timer4, aby wywoływał miganie LED informujaca o starcie, inicjalizacji radia
